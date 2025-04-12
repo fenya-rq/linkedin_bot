@@ -14,6 +14,7 @@ beautifulsoup4 = "4.13.3"
 playwright = "1.51.0"
 httpx = "0.28.1"
 python-dotenv = "1.1.0"
+asyncio = "3.4.3"
 
 
 [build-system]
