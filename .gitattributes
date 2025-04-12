@@ -1,0 +1,9 @@
+* text=auto
+
+# Handle common binary file types
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.pdf binary
+*.zip binary
+*.ico binary
