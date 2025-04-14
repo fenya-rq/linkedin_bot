@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import argparse
 import asyncio
 import random
+import sys
 
-from httpx import Client
 from playwright.async_api import (
     async_playwright,
     Browser,
@@ -11,8 +12,10 @@ from playwright.async_api import (
     Page
 )
 
-from bs_parser import PageParser, LinkedInLoginFormParser
-from config import LINKEDIN_NAME, LINKEDIN_PASSWORD
+from config import DEBUG, LINKEDIN_NAME, LINKEDIN_PASSWORD, logger_dbg
+from utils import check_sys_arg
+from .bs_parser import PageParser, LinkedInLoginFormParser
+
 
 USER_AGENTS = (
     'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
@@ -66,4 +69,13 @@ async def main():
     await client.start_webdriver(parser)
 
 
-asyncio.run(main())
+if __name__ == '__main__':
+
+    if check_sys_arg().debug or DEBUG == 'true':
+        print('DEBUG IS ON')
+        logger_dbg.debug('debug is on.')
+        sys.exit(1)
+
+    print('DEBUG IS OFF')
+
+    asyncio.run(main())
