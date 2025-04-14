@@ -1,81 +1,61 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-import argparse
-import asyncio
 import random
-import sys
+from abc import ABC, abstractmethod
 
-from playwright.async_api import (
-    async_playwright,
-    Browser,
-    BrowserContext,
-    Page
-)
+from playwright.async_api import Browser, BrowserContext, Page
 
-from config import DEBUG, LINKEDIN_NAME, LINKEDIN_PASSWORD, logger_dbg
-from utils import check_sys_arg
-from .bs_parser import PageParser, LinkedInLoginFormParser
+from services import SimpleClient
+from .bs_parser import PageParser
 
 
-USER_AGENTS = (
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-    ' (KHTML, like Gecko) Chrome/91.0.864.59 Safari/537.36 Edg/91.0.864.59',
-    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15'
-    ' (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-    ' (KHTML, like Gecko) Chrome/90.0.4430.212 Safari/537.36 OPR/76.0.4017.177',
-    'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-    ' (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Vivaldi/4.0'
-)
+class BaseManager(ABC):
+    __slots__ = ("client", "parser")
+
+    def __init__(self, client: SimpleClient, parser: PageParser):
+        self.client = client
+        self.parser = parser
+
+    @abstractmethod
+    async def create_context(self, browser: Browser) -> BrowserContext:
+        pass
+
+    @abstractmethod
+    async def create_page(self, context: BrowserContext) -> Page:
+        pass
+
+    @abstractmethod
+    async def get_page_content(self, page: Page) -> str:
+        pass
+
+    @abstractmethod
+    async def process_page(self, page_content: str):
+        pass
 
 
-class LinkedInClient:
-    __slots__ = ('signup_url', 'name', 'password')
+class LoginManager(BaseManager):
+    __slots__ = ("client", "parser")
 
-    def __init__(self, name: str, password: str) -> None:
-        self.name = name
-        self.password = password
-        self.signup_url = 'https://www.linkedin.com/login/ru?fromSignIn=true&trk=guest_homepage-basic_nav-header-signin'
+    def __init__(self, client: SimpleClient, parser: PageParser):
+        super().__init__(client, parser)
 
-    @staticmethod
-    async def get_and_fill_login_form(page_content: str, parser: PageParser):
-        return parser.parse_signin_page(page_content)
+    async def create_context(self, browser: Browser) -> BrowserContext:
+        user_agent = random.choice(self.client.USER_AGENTS)
+        return await browser.new_context(
+            java_script_enabled=True, user_agent=user_agent
+        )
 
-    @staticmethod
-    async def create_context(browser: Browser) -> BrowserContext:
-        user_agent = random.choice(USER_AGENTS)
-        return await browser.new_context(java_script_enabled=True, user_agent=user_agent)
+    async def create_page(self, context: BrowserContext):
+        return await context.new_page()
 
-    @staticmethod
-    async def get_page_content(page: Page, url: str) -> str:
-        await page.goto(url)
-        await page.wait_for_load_state('load')
+    async def get_page_content(self, page: Page) -> str:
+        await page.goto(self.client.url)
+        await page.wait_for_load_state("load")
         return await page.content()
 
-    async def start_webdriver(self, parser: PageParser) -> None:
-        async with async_playwright() as pw:
-            browser = await pw.chromium.launch(headless=False)
-            context = await self.create_context(browser)
-            page = await context.new_page()
-            content = await self.get_page_content(page, self.signup_url)
+    async def process_page(self, page_content: str):
+        return self.parser.parse(page_content)
 
-            filled_form = await self.get_and_fill_login_form(content, parser)
-
-
-async def main():
-    parser = LinkedInLoginFormParser
-    client = LinkedInClient(LINKEDIN_NAME, LINKEDIN_PASSWORD)
-    await client.start_webdriver(parser)
-
-
-if __name__ == '__main__':
-
-    if check_sys_arg().debug or DEBUG == 'true':
-        print('DEBUG IS ON')
-        logger_dbg.debug('debug is on.')
-        sys.exit(1)
-
-    print('DEBUG IS OFF')
-
-    asyncio.run(main())
+    async def start_manage(self, browser: Browser):
+        context = await self.create_context(browser)
+        page = await self.create_page(context)
+        content = await self.get_page_content(page)
+        result = await self.process_page(content)

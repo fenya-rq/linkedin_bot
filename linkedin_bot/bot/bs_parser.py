@@ -1,21 +1,24 @@
-from typing import Protocol
+from abc import ABC, abstractmethod
 
 from bs4 import BeautifulSoup
 
 
-class PageParser(Protocol):
-
-    def parse_signin_page(self, html: str, parser_type: str = 'html.parser') -> str:
-        ...
-
-
-class LinkedInLoginFormParser:
+class PageParser(ABC):
     __slots__ = ()
 
     @staticmethod
-    def parse_signin_page(html: str, parser_type: str = 'html.parser') -> str:
+    @abstractmethod
+    def parse(html: str, parser_type: str = "html.parser") -> str:
+        pass
+
+
+class LinkedInLoginFormParser(PageParser):
+    __slots__ = ()
+
+    @staticmethod
+    def parse(html: str, parser_type: str = "html.parser") -> str:
         # TODO: add parsing logic, change return
 
         soup = BeautifulSoup(html, parser_type)
         ...
-        return 'test result'
+        return "test result"
