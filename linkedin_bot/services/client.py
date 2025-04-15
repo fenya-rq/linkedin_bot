@@ -1,4 +1,5 @@
-from dataclasses import dataclass
+import random
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -6,6 +7,7 @@ class SimpleClient:
     name: str
     password: str
     url: str
+    user_agent: str = field(init=False)
 
     USER_AGENTS: tuple[str] = (
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
@@ -18,3 +20,6 @@ class SimpleClient:
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         ' (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Vivaldi/4.0',
     )
+
+    def __post_init__(self):
+        self.user_agent = random.choice(self.USER_AGENTS)
