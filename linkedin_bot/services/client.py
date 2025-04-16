@@ -9,7 +9,7 @@ class SimpleClient:
     url: str
     user_agent: str = field(init=False)
 
-    USER_AGENTS: tuple[str] = (
+    USER_AGENTS: tuple[str, ...] = (
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
         'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         ' (KHTML, like Gecko) Chrome/91.0.864.59 Safari/537.36 Edg/91.0.864.59',
