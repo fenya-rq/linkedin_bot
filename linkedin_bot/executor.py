@@ -3,7 +3,7 @@
 
 import asyncio
 
-from bot import LoginManager
+from bot import LinkedInPostsParser, PostManager
 from config import DEBUG, LINKEDIN_NAME, LINKEDIN_PASSWORD, LOGIN_URL
 from playwright.async_api import Browser, async_playwright
 from services import SimpleClient
@@ -13,12 +13,12 @@ from utils import check_sys_arg
 async def start_activity(headless: bool) -> None:
     # TODO: bring out using factory pattern
     client = SimpleClient(LINKEDIN_NAME, LINKEDIN_PASSWORD, LOGIN_URL)
-    manager = LoginManager(client)
+    manager = PostManager(client, LinkedInPostsParser)
 
     async with async_playwright() as pw:
         browser: Browser = await pw.chromium.launch(headless=headless)
-        await manager.start_manage(browser)
-
+        res = await manager.get_posts_id(browser)
+        print(res)
 
 if __name__ == "__main__":
     head_off = True

@@ -24,8 +24,7 @@ testpaths = ["tests"]
 norecursedirs = [".git", ".tox", ".nox", ".venv", ".env", "build", "dist"]
 
 [tool.ruff]
-fix = true  # For development
-#fix-only = true  # For production
+fix-only = true
 line-length = 100
 output-format = "grouped"
 
