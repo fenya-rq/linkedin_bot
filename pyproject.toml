@@ -16,6 +16,13 @@ httpx = "0.28.1"
 python-dotenv = "1.1.0"
 asyncio = "3.4.3"
 
+[tool.poetry.group.dev.dependencies]
+pre-commit = "4.2.0"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = [".git", ".tox", ".nox", ".venv", ".env", "build", "dist"]
+
 [tool.ruff]
 fix = true  # For development
 #fix-only = true  # For production
@@ -29,11 +36,11 @@ exclude = [".venv", "files", "parser.log", "example*.py"]
 quote-style = "single"
 
 [tool.ruff.lint]
-extend-select = ["TID252"]
 ignore = [
-    "D100", "D101", "D102", "D103", "D104", "D107"
+    "D100", "D101", "D102", "D103", "D104", "D105", "D107"
 ]
-select = ["E4", "E7", "E9", "F", "D", "TC", "I", "PTH", "PD"]
+select = ["E4", "E7", "E9", "F", "D", "I", "PTH", "PD"]
+extend-select = ["TID252"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "pep257"

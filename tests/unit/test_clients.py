@@ -2,7 +2,6 @@ import pytest
 
 
 class TestClient:
-
     @pytest.fixture(autouse=True)
     def setup(self, get_fake_client):
         self.client = get_fake_client
