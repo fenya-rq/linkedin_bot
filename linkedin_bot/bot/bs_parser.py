@@ -14,6 +14,6 @@ class LinkedInLoginFormParser(PageParser):
     __slots__ = ()
 
     @staticmethod
-    def parse(html: str, parser_type: str = 'html.parser') -> str:
+    def parse(html: str, parser_type: str = 'html.parser') -> str:  # type: ignore
         # TODO: add parsing logic, change return
         ...
