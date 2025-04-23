@@ -30,7 +30,7 @@ LOGGING_CONFIG = {
         'file_dbg': {
             'class': 'logging.FileHandler',
             'filename': Path(ROOT_DIR.parent, 'logs', 'parser_debug.log'),
-            'mode': 'w+',
+            'mode': 'w',
             'encoding': 'utf-8',
             'formatter': 'debug',
             'level': 'DEBUG',
