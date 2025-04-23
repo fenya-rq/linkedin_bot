@@ -1,0 +1,55 @@
+#  Python artifacts
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+
+# Virtual‑envs (common names)
+.env/
+.venv/
+venv/
+ENV/
+env/
+# Poetry’s .venv when you keep it inside the project
+.poetry/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Coverage & test reports
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.pytest_cache/
+.nox/
+
+# Logs & runtime data
+*.log
+*.sqlite3
+*.db
+instance/
+*.pid
+
+# Jupyter & IPython
+.ipynb_checkpoints/
+.profile_default/
+# VSCode interactive window history
+*vsc-jupyter*
+
+# PyCharm / IntelliJIDEA
+.idea/
+# VSCode
+.vscode/
+# macOS Finder / Windows Explorer
+.DS_Store
+Thumbs.db
+
+#  Docker - Ignore local volumes, env files, etc.
+**/.env
+**/.env.*
+docker-data/
