@@ -1,13 +1,19 @@
 from argparse import ArgumentParser, Namespace
 
-SYS_ARGS = dict(
-    debug='Enable debug mode',
-)
+SYS_ARGS = {
+    'posts_restrict': {'type': int, 'help': 'Number of reposts', 'default': 3},
+    'debug': {'type': str, 'help': 'Enable debug mode', 'default': 'false'},
+}
 
 
-def _add_args_to_parser(parser: ArgumentParser, arguments: dict[str, str]) -> None:
-    for arg, help_text in arguments.items():
-        parser.add_argument(f'--{arg}', action='store_true', help=help_text)
+def _add_args_to_parser(parser: ArgumentParser, arguments: dict[str, dict]) -> None:
+    for arg, arg_props in arguments.items():
+        parser.add_argument(
+            f'--{arg}',
+            type=arg_props.get('type', str),
+            help=arg_props.get('help', ''),
+            default=arg_props.get('default'),
+        )
 
 
 def check_sys_arg() -> Namespace:

@@ -1,8 +1,8 @@
-from .acc_manager import LoginManager, PostManager
+from .acc_manager import LNLoginManager, LNPostManager
 from .bs_parser import LinkedInPostsParser
 
 __all__ = [
-    'LoginManager',
-    'PostManager',
+    'LNLoginManager',
+    'LNPostManager',
     'LinkedInPostsParser',
 ]
