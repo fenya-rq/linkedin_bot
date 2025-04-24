@@ -1,14 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """Automate LinkedIn repost activity using Playwright."""
-
 import asyncio
+from playwright.async_api import Browser, async_playwright
 
 from bot import LinkedInPostsParser, LNPostManager
-from config import DEBUG, LINKEDIN_NAME, LINKEDIN_PASSWORD, LOGIN_URL
-from playwright.async_api import Browser, async_playwright
+from config import DEBUG, LINKEDIN_NAME, LINKEDIN_PASSWORD, LINKEDIN_LOGIN_URL, main_logger
 from services import SimpleClient
-from utils import check_sys_arg
+from utilities import check_sys_arg, log_writer
 
 
 async def start_activity(headless: bool, **kwargs) -> None:
@@ -24,7 +23,7 @@ async def start_activity(headless: bool, **kwargs) -> None:
         Exception: If `restrict` is less than 1.
     """
     # TODO: bring out using factory pattern
-    client = SimpleClient(LINKEDIN_NAME, LINKEDIN_PASSWORD, LOGIN_URL)
+    client = SimpleClient(LINKEDIN_NAME, LINKEDIN_PASSWORD, LINKEDIN_LOGIN_URL)
     manager = LNPostManager(client, LinkedInPostsParser)
 
     reposts_amount = kwargs.get('restrict', 0)
@@ -36,6 +35,7 @@ async def start_activity(headless: bool, **kwargs) -> None:
         await manager.make_reposts(browser, reposts_amount)
 
 if __name__ == '__main__':
+    log_writer(main_logger, 55, 'Service started...')
     # Parse CLI args and determine headless mode
     sys_args = check_sys_arg()
     head_off = True

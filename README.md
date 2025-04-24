@@ -36,7 +36,7 @@ cd linkedin_bot
 cp .env.example .env   # ← add your LinkedIn creds & settings here
 ```
 
-### 2. Run service
+### 2. Run service from same root directory
 `docker compose up -d --build`
 
 #### How it works
