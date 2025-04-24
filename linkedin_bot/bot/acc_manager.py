@@ -1,13 +1,14 @@
-import asyncio
 import random
 from abc import ABC, abstractmethod
 from typing import Type
 from urllib.parse import urlparse
 
-from config import logger_prd
+import asyncio
 from playwright.async_api import Browser, BrowserContext, Page
-from services import SimpleClient
 
+from services import SimpleClient
+from utilities import CAPTCHAOccurredError, log_writer
+from . import main_logger
 from .bs_parser import LinkedInPostsParser
 
 
@@ -95,11 +96,10 @@ class LNLoginManager(BaseManager):
 
         login_button = page.locator('button[type="submit"]')
         await login_button.click()
+        await page.wait_for_timeout(5000)
 
         if not (url := page.url) or not urlparse(url).path.startswith('/feed'):
-            err_msg = 'Captcha is occurred!'
-            logger_prd.error(err_msg)
-            await page.wait_for_timeout(30000)
+            raise CAPTCHAOccurredError()
 
         return page
 
@@ -117,10 +117,10 @@ class LNLoginManager(BaseManager):
         page = await self._create_page(context)
         try:
             feed_page = await self._log_in(page)
-            logger_prd.log(55, 'Logged successfully!')
+            log_writer(main_logger, 55, 'Logged successfully!')
             return feed_page
         except Exception as e:
-            logger_prd.error(e)
+            log_writer(main_logger, 40, e)
             raise
 
 
@@ -209,11 +209,11 @@ class LNPostManager(LNLoginManager):
                 await instant_repost.wait_for(state='visible', timeout=1000)
                 await instant_repost.click()
             except Exception as e:
-                logger_prd.error(f"Instant repost option not found for post {id_}: {e}")
+                log_writer(main_logger, 30, f'Instant repost option not found for post {id_}: {e}')
                 continue
 
             # Limit with passed reposts amount restrict
-            if pos == restrict-1:
+            if pos == restrict - 1:
                 break
 
     async def make_reposts(self, browser: Browser, restrict: int):
@@ -228,8 +228,6 @@ class LNPostManager(LNLoginManager):
             restrict (int): Max number of reposts to make.
         """
         feed_page = await self.log_in(browser)
-        if feed_page is None:
-            logger_prd.error('Unexpected error, feed page is not gotten.')
-            return
         post_ids = await self._get_post_ids(feed_page)
+        log_writer(main_logger, 55, 'Start reposting...')
         await self._make_reposts(feed_page, post_ids, restrict)
