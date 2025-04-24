@@ -6,9 +6,9 @@ from urllib.parse import urlparse
 import asyncio
 from playwright.async_api import Browser, BrowserContext, Page
 
-from services import SimpleClient
-from utilities import CAPTCHAOccurredError, log_writer
-from . import main_logger
+from linkedin_bot.bot import main_logger
+from linkedin_bot.services import SimpleClient
+from linkedin_bot.utilities import CAPTCHAOccurredError, log_writer
 from .bs_parser import LinkedInPostsParser
 
 
@@ -120,7 +120,7 @@ class LNLoginManager(BaseManager):
             log_writer(main_logger, 55, 'Logged successfully!')
             return feed_page
         except Exception as e:
-            log_writer(main_logger, 40, e)
+            log_writer(main_logger, 40, f'{e}')
             raise
 
 
