@@ -6,10 +6,10 @@ from urllib.parse import urlparse
 import asyncio
 from playwright.async_api import Browser, BrowserContext, Page
 
-from linkedin_bot.bot import main_logger
 from linkedin_bot.services import SimpleClient
 from linkedin_bot.utilities import CAPTCHAOccurredError, log_writer
 from .bs_parser import LinkedInPostsParser
+from . import main_logger
 
 
 class BaseManager(ABC):

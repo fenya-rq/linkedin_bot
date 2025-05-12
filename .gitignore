@@ -174,4 +174,4 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
-ex*.py
+exam*.py
