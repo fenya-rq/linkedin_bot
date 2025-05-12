@@ -14,9 +14,9 @@ load_dotenv()
 DEBUG = os.getenv('DEBUG')
 ROOT_DIR = Path(__file__).resolve().parent
 
-LINKEDIN_NAME = os.getenv('LINKEDIN_NAME')
-LINKEDIN_PASSWORD = os.getenv('LINKEDIN_PASSWORD')
-LINKEDIN_LOGIN_URL = os.getenv('LINKEDIN_LOGIN_URL')
+LINKEDIN_NAME = os.getenv('LINKEDIN_NAME', 'default')
+LINKEDIN_PASSWORD = os.getenv('LINKEDIN_PASSWORD', 'default')
+LINKEDIN_LOGIN_URL = os.getenv('LINKEDIN_LOGIN_URL', 'default')
 
 LOGGING_CONFIG = {
     'version': 1,

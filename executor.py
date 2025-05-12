@@ -4,10 +4,10 @@
 import asyncio
 from playwright.async_api import Browser, async_playwright
 
-from bot import LinkedInPostsParser, LNPostManager
-from config import DEBUG, LINKEDIN_NAME, LINKEDIN_PASSWORD, LINKEDIN_LOGIN_URL, main_logger
-from services import SimpleClient
-from utilities import check_sys_arg, log_writer
+from linkedin_bot.bot import LinkedInPostsParser, LNPostManager
+from linkedin_bot.config import DEBUG, LINKEDIN_NAME, LINKEDIN_PASSWORD, LINKEDIN_LOGIN_URL, main_logger
+from linkedin_bot.services import SimpleClient
+from linkedin_bot.utilities import check_sys_arg, log_writer
 
 
 async def start_activity(headless: bool, **kwargs) -> None:
@@ -35,6 +35,7 @@ async def start_activity(headless: bool, **kwargs) -> None:
         await manager.make_reposts(browser, reposts_amount)
 
 if __name__ == '__main__':
+    # TODO: implement check `default` value in passed credentials
     log_writer(main_logger, 55, 'Service started...')
     # Parse CLI args and determine headless mode
     sys_args = check_sys_arg()
