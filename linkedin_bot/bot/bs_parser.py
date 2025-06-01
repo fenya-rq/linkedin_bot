@@ -14,8 +14,7 @@ class BaseParser(ABC):
         """
         Parse content and return results.
 
-        Returns:
-            Any: Parsed output after processing content.
+        :returns: Parsed output after processing content
         """
         pass
 
@@ -31,9 +30,8 @@ class LinkedInPostsParser(BaseParser):
         """
         Initialize parser with HTML content.
 
-        Args:
-            html (str): Raw HTML to be parsed.
-            parser_type (str): BeautifulSoup parser to use.
+        :param html: Raw HTML to be parsed
+        :param parser_type: BeautifulSoup parser to use
         """
         self.html = html
         self.parser_type = parser_type
@@ -46,14 +44,13 @@ class LinkedInPostsParser(BaseParser):
         Scans the feed container for posts, inspects text spans,
         filters by KEY_WORDS, and collects data IDs.
 
-        Returns:
-            set[str]: Unique data IDs of matching posts.
+        :returns: Unique data IDs of matching posts
         """
         data_ids = set()
 
         # Get feeds container and then all posts from it
         feeds = self.soup.find('div', attrs={'data-finite-scroll-hotkey-context': 'FEED'})
-        posts = feeds.find_all('div', recursive=False)
+        posts = feeds.find_all('div', recursive=False)  # type: ignore
         # Iterate through all founded posts, check if key in its text and add data_id
         for post in posts:
             post_container = post.find_next('div')
