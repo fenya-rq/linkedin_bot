@@ -1,14 +1,30 @@
-class CAPTCHAOccurredError(Exception):
-    """Raised when login flow hits an unexpected CAPTCHA."""
+from typing import Any
 
-    def __init__(self, url: str | None = None, image_path: str | None = None) -> None:
-        self.url = url
-        self.image_path = image_path
-        super().__init__(self._build_err_msg())
 
-    def _build_err_msg(self) -> str:
-        parts: list[str] = ['CAPTCHA encountered']
-        if self.url and self.image_path:
-            parts.append(f'at {self.url}')
-            parts.append(f'(screenshot --> {self.image_path})')
-        return ' '.join(parts)
+class CaptchaSolverError(Exception):
+    """Custom exception for CAPTCHA solving errors."""
+
+    def __init__(
+        self, message: str = 'Failed to handle CAPTCHA.', details: dict[str, Any] | None = None
+    ) -> None:
+        """
+        Initialize CAPTCHA solver error.
+
+        :param message: Error message
+        :param details: Additional error details
+        """
+        self._message = message
+        self.details = details or {}
+        super().__init__(self._message)
+
+    @property
+    def message(self) -> str:
+        """
+        Format the error message with details.
+
+        :returns: Formatted error message with details
+        """
+        result = self._message
+        for k, v in self.details.items():
+            result += f'\n{k}: {v}'
+        return result

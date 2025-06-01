@@ -1,9 +1,8 @@
 import pytest
+from playwright.async_api import Page
 from pytest_mock import MockerFixture
 
-from playwright.async_api import Page
-
-from linkedin_bot.services import SimpleClient
+from linkedin_bot.services import SimpleClient, TwoCaptchaSolver
 
 
 @pytest.fixture(scope='class')
@@ -12,14 +11,28 @@ def fake_client():
 
 
 @pytest.fixture
-def manager_factory(fake_client):
+def manager_factory(mocker: MockerFixture, fake_client):
     """
     Return a callable that instantiates an arbitrary Manager subclass
     and injects the shared `fake_client`.
     Usage inside tests:
+        ```
+        # Simple usage
         mgr = manager_factory(LNLoginManager)
+
+        # With custom captcha behavior
+        mgr = manager_factory(
+            LNLoginManager, captcha_behavior=CaptchaSolverError('Test error')
+        )
+        ```
     """
-    def _build(manager_cls, *args, **kwargs):
+
+    def _build(manager_cls, *args, captcha_behavior=None, **kwargs):
+        mock_config = {'new_callable': mocker.AsyncMock}
+        if captcha_behavior:
+            mock_config['side_effect'] = captcha_behavior
+
+        mocker.patch.object(manager_cls, '_handle_captcha', **mock_config)
         mgr = manager_cls(fake_client, *args, **kwargs)
         return mgr
 
@@ -27,9 +40,9 @@ def manager_factory(fake_client):
 
 
 @pytest.fixture
-def page(mocker: MockerFixture):
+def fake_page(mocker: MockerFixture):
     """A fully‑mocked Playwright Page object."""
-    page = mocker.MagicMock(spec=Page)
+    page = mocker.Mock(spec=Page)
     page.url = ''
 
     def make_locator(count=0):
@@ -44,3 +57,13 @@ def page(mocker: MockerFixture):
     page.wait_for_timeout = mocker.AsyncMock()
     page.locator.side_effect = lambda sel: make_locator(1 if sel.startswith('label') else 0)
     return page
+
+
+@pytest.fixture
+def fake_2captcha_solver(mocker: MockerFixture):
+    """Mock TwoCaptchaSolver fixture for testing."""
+    captcha_solver = mocker.Mock(spec=TwoCaptchaSolver)
+
+    captcha_solver.api_key = 'fake_api_key'
+    captcha_solver.solve_captcha = mocker.AsyncMock(return_value='fake_captcha_solution')
+    yield captcha_solver

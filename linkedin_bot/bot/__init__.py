@@ -1,10 +1,6 @@
 from linkedin_bot.config import main_logger
-from .acc_manager import LNLoginManager, LNPostManager
+
+from .acc_manager import LNLoginManager, LNRepostManager
 from .bs_parser import LinkedInPostsParser
 
-__all__ = [
-    'LNLoginManager',
-    'LNPostManager',
-    'LinkedInPostsParser',
-    'main_logger'
-]
+__all__ = ['LNLoginManager', 'LNRepostManager', 'LinkedInPostsParser', 'main_logger']
