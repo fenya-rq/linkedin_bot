@@ -1,0 +1,50 @@
+repos:
+  - repo: https://github.com/charliermarsh/ruff-pre-commit
+    rev: v0.2.2
+    hooks:
+      - id: ruff
+        args:
+          - --fix-only
+          - --line-length=100
+          - --output-format=grouped
+          - --extend-ignore=I,D100,D101,D102,D103,D104,D105,D107
+          - --select=E4,E7,E9,F,D,I,PTH,PD
+          - --extend-select=TID252
+        exclude: ^(.venv|files|parser.log|example.*\.py)$
+        files: ^.*\.py$
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-toml
+      - id: check-yaml
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+      - id: debug-statements
+
+  - repo: https://github.com/pre-commit/mirrors-mypy
+    rev: v1.9.0
+    hooks:
+      - id: mypy
+
+  - repo: local
+    hooks:
+      - id: check-poetry-lock
+        name: Poetry Lock sync
+        entry: poetry lock --no-update
+        language: system
+        types: [ python ]
+        stages: [ pre-commit ]
+        pass_filenames: false
+
+  - repo: local
+    hooks:
+      - id: run-pytest
+        name: Run testing
+        entry: poetry run pytest
+        language: system
+        types: [ python ]
+        stages: [ pre-push ]
+        pass_filenames: false
+        args: [ "--confcutdir=.", "tests" ]

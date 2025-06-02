@@ -1,0 +1,14 @@
+services:
+  accbot:
+    build: .
+    volumes:
+      - .:/accbot
+      - ./logs:/var/log/accbot/
+    env_file:
+      - .env
+    command: >
+      python3 linkedin_bot/executor.py --posts_restrict 3
+    expose:
+      - 8000
+    ports:
+      - "8000:8000"
