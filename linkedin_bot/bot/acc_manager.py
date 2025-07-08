@@ -238,30 +238,29 @@ class LNPostAnalystManager(LNLoginManager):
         parser_obj = self.parser_cls(html=content)  # type: ignore
         return parser_obj.parse()
 
-    async def get_post_data(self) -> set[str]:
+    async def get_post_data(self, page: Page | None = None) -> set[str]:
         """
         Extract unique post IDs from feed page.
 
         :returns: Set of extracted post IDs
         """
-        page = await self.log_in()
+        if not page:
+            page = await self.log_in()
         await page.wait_for_load_state('load')
-        await self._scroll_page(page)
+        await self._scroll_page(page, 5)
         content = await page.content()
         return self._parse_data(content)
 
 
 class LNRepostManager(LNPostAnalystManager):
 
-    async def _make_reposts(self, post_ids: set[str], restrict: int) -> None:
+    async def _make_reposts(self, page: Page, post_ids: set[str], restrict: int) -> None:
         """
         Perform reposts for given post IDs.
 
         :param post_ids: Set of post IDs to repost
         :param restrict: Max number of posts to repost
         """
-        page = await self.log_in()
-
         for pos, id_ in enumerate(post_ids):
             container = page.locator(f'div[data-id="{id_}"]')
             share_btn = container.locator('button:has-text("Поделиться")')
@@ -292,7 +291,7 @@ class LNRepostManager(LNPostAnalystManager):
 
         :param restrict: Max number of reposts to make
         """
-
-        post_ids = await self.get_post_data()
+        page = await self.log_in()
+        post_ids = await self.get_post_data(page)
         log_writer(main_logger, 55, 'Start reposting...')
-        await self._make_reposts(post_ids, restrict)
+        await self._make_reposts(page, post_ids, restrict)
