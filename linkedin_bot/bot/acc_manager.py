@@ -21,22 +21,22 @@ class BaseManager(ABC):
     Provides the interface for creating a browser context and page.
     """
 
-    __slots__ = ('client',)
+    __slots__ = 'client', 'browser'
 
-    def __init__(self, client: SimpleClient) -> None:
+    def __init__(self, client: SimpleClient, browser: Browser) -> None:
         """
         Initialize with a SimpleClient instance.
 
         :param client: The client configuration object
         """
         self.client = client
+        self.browser = browser
 
     @abstractmethod
-    async def _create_context(self, browser: Browser, **kwargs: dict[str, str]) -> BrowserContext:
+    async def _create_context(self, **kwargs: dict[str, str]) -> BrowserContext:
         """
         Create a browser context.
 
-        :param browser: The Playwright browser instance
         :param kwargs: Additional context options
         :returns: The created browser context
         """
@@ -64,7 +64,7 @@ class LNLoginManager(BaseManager):
     __slots__ = 'captcha_solver'
 
     def __init__(
-        self, client: SimpleClient, captcha_solver: BaseCaptchaSolver | None = None
+        self, client: SimpleClient, browser: Browser, captcha_solver: BaseCaptchaSolver | None = None
     ) -> None:
         """
         Initialize with client and optional CAPTCHA solver.
@@ -72,19 +72,18 @@ class LNLoginManager(BaseManager):
         :param client: The client configuration object
         :param captcha_solver: Optional CAPTCHA solving service
         """
-        super().__init__(client)
+        super().__init__(client, browser)
         self.captcha_solver = captcha_solver
 
-    async def _create_context(self, browser: Browser, **kwargs: dict[str, str]) -> BrowserContext:
+    async def _create_context(self, **kwargs: dict[str, str]) -> BrowserContext:
         """
         Create a browser context with random user agent.
 
-        :param browser: The Playwright browser instance
         :param kwargs: Additional context options
         :returns: Configured browser context
         """
         user_agent = random.choice(self.client.USER_AGENTS)
-        return await browser.new_context(java_script_enabled=True, user_agent=user_agent)
+        return await self.browser.new_context(java_script_enabled=True, user_agent=user_agent)
 
     @staticmethod
     async def _create_page(context: BrowserContext) -> Page:
@@ -161,22 +160,21 @@ class LNLoginManager(BaseManager):
         return page
 
     @retry_on_failure(max_attempts=5, delay=10, exceptions=(CaptchaSolverError,))
-    async def log_in(self, browser: Browser) -> Page:
+    async def log_in(self) -> Page:
         """
         Set up context and perform login.
 
-        :param browser: The Playwright browser instance
         :returns: The feed page if successful
         :raises CaptchaSolverError: If login process fails
         """
-        context = await self._create_context(browser)
+        context = await self._create_context()
         page = await self._create_page(context)
         feed_page = await self._log_in(page)
         log_writer(main_logger, 55, 'Logged successfully!')
         return feed_page
 
 
-class LNRepostManager(LNLoginManager):
+class LNPostAnalystManager(LNLoginManager):
     """
     Handles LinkedIn post interactions such as reposting.
 
@@ -188,6 +186,7 @@ class LNRepostManager(LNLoginManager):
     def __init__(
         self,
         client: SimpleClient,
+        browser: Browser,
         parser_cls: type[BaseParser],
         captcha_solver: BaseCaptchaSolver | None = None,
     ) -> None:
@@ -198,7 +197,7 @@ class LNRepostManager(LNLoginManager):
         :param parser_cls: Parser class for LinkedIn posts
         :param captcha_solver: Optional CAPTCHA solver service
         """
-        super().__init__(client, captcha_solver)
+        super().__init__(client, browser, captcha_solver)
         self.parser_cls = parser_cls
 
     @staticmethod
@@ -239,26 +238,30 @@ class LNRepostManager(LNLoginManager):
         parser_obj = self.parser_cls(html=content)  # type: ignore
         return parser_obj.parse()
 
-    async def _get_post_ids(self, page: Page) -> set[str]:
+    async def get_post_data(self) -> set[str]:
         """
         Extract unique post IDs from feed page.
 
-        :param page: The LinkedIn feed page
         :returns: Set of extracted post IDs
         """
+        page = await self.log_in()
         await page.wait_for_load_state('load')
         await self._scroll_page(page)
         content = await page.content()
         return self._parse_data(content)
 
-    async def _make_reposts(self, page: Page, post_ids: set[str], restrict: int) -> None:
+
+class LNRepostManager(LNPostAnalystManager):
+
+    async def _make_reposts(self, post_ids: set[str], restrict: int) -> None:
         """
         Perform reposts for given post IDs.
 
-        :param page: The LinkedIn feed page
         :param post_ids: Set of post IDs to repost
         :param restrict: Max number of posts to repost
         """
+        page = await self.log_in()
+
         for pos, id_ in enumerate(post_ids):
             container = page.locator(f'div[data-id="{id_}"]')
             share_btn = container.locator('button:has-text("Поделиться")')
@@ -283,14 +286,13 @@ class LNRepostManager(LNLoginManager):
             if pos == restrict - 1:
                 break
 
-    async def make_reposts(self, browser: Browser, restrict: int) -> None:
+    async def make_reposts(self, restrict: int) -> None:
         """
         Main entry point for performing reposts.
 
-        :param browser: The Playwright browser instance
         :param restrict: Max number of reposts to make
         """
-        feed_page = await self.log_in(browser)
-        post_ids = await self._get_post_ids(feed_page)
+
+        post_ids = await self.get_post_data()
         log_writer(main_logger, 55, 'Start reposting...')
-        await self._make_reposts(feed_page, post_ids, restrict)
+        await self._make_reposts(post_ids, restrict)

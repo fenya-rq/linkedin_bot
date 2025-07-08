@@ -6,7 +6,7 @@ import asyncio
 
 from playwright.async_api import Browser, async_playwright
 
-from linkedin_bot.bot import LinkedInPostsParser
+from linkedin_bot.bot import LinkedInPostsParser, LinkedInVacancyAnalyzeParser
 from linkedin_bot.config import (
     DEBUG,
     LINKEDIN_LOGIN_URL,
@@ -29,7 +29,9 @@ async def start_activity(headless: bool, **kwargs) -> None:
     :raises Exception: If `restrict` is less than 1
     """
     client = SimpleClient(LINKEDIN_NAME, LINKEDIN_PASSWORD, LINKEDIN_LOGIN_URL)
-    manager = ManagerFactory.create_repost_manager(client, LinkedInPostsParser)
+
+    # repost = ManagerFactory.create_repost_manager(client, LinkedInPostsParser)
+    # analyst = ManagerFactory.create_analyst_manager(client, LinkedInVacancyAnalyzeParser)
 
     reposts_amount = kwargs.get('restrict', 0)
     if reposts_amount < 1:
@@ -37,7 +39,16 @@ async def start_activity(headless: bool, **kwargs) -> None:
 
     async with async_playwright() as pw:
         browser: Browser = await pw.chromium.launch(headless=headless)
-        await manager.make_reposts(browser, reposts_amount)
+
+        # repost = ManagerFactory.create_repost_manager(client, browser, LinkedInPostsParser)
+        analyst = ManagerFactory.create_analyst_manager(client, browser, LinkedInVacancyAnalyzeParser)
+
+        # await repost.make_reposts(reposts_amount)
+        result = await analyst.get_post_data()
+
+        with open('test.txt', mode='w', encoding='utf-8') as f:
+            for t in result:
+                f.write(t)
 
 
 if __name__ == '__main__':

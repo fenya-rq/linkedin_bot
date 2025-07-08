@@ -37,6 +37,19 @@ class LinkedInPostsParser(BaseParser):
         self.parser_type = parser_type
         self.soup: BeautifulSoup = BeautifulSoup(self.html, self.parser_type)
 
+    def get_feeds(self):
+        return self.soup.find('div', attrs={'data-finite-scroll-hotkey-context': 'FEED'})
+
+    def get_posts(self):
+        return self.get_feeds().find_all('div', recursive=False)  # type: ignore
+
+    def extract_posts_text(self):
+        for post in self.get_posts():
+            post_container = post.find_next('div')
+            spans = post_container.find_all('span', dir='ltr')
+            text = spans[1].get_text().lower() if len(spans) > 1 else ''
+            yield post_container, text
+
     def parse(self) -> set[str]:
         """
         Extract post data IDs containing specified keywords.
@@ -48,16 +61,26 @@ class LinkedInPostsParser(BaseParser):
         """
         data_ids = set()
 
-        # Get feeds container and then all posts from it
-        feeds = self.soup.find('div', attrs={'data-finite-scroll-hotkey-context': 'FEED'})
-        posts = feeds.find_all('div', recursive=False)  # type: ignore
-        # Iterate through all founded posts, check if key in its text and add data_id
-        for post in posts:
-            post_container = post.find_next('div')
-            spans = post_container.find_all('span', dir='ltr')
-            text = spans[1].get_text().lower() if len(spans) > 1 else ''
+        for post_container, text in self.extract_posts_text():
             if any(key in text for key in self.KEY_WORDS):
                 data_id = post_container.attrs.get('data-id')
                 data_ids.add(data_id)
 
         return data_ids
+
+
+class LinkedInVacancyAnalyzeParser(LinkedInPostsParser):
+
+    KEY_WORDS = {
+        'hiring', 'ищу', 'ищем', 'vacancy', 'vacancies', 'вакансия', 'вакансии', 'python',
+        'backend', 'питон', 'бэкенд', 'найдись', 'в поиске', 'в поисках'
+    }
+
+    def parse(self) -> set[str]:
+        data_content = set()
+
+        for _, text in self.extract_posts_text():
+            if any(key in text for key in self.KEY_WORDS):
+                data_content.add(text)
+
+        return data_content
