@@ -18,6 +18,8 @@ LINKEDIN_NAME = os.getenv('LINKEDIN_NAME', 'default')
 LINKEDIN_PASSWORD = os.getenv('LINKEDIN_PASSWORD', 'default')
 LINKEDIN_LOGIN_URL = os.getenv('LINKEDIN_LOGIN_URL', 'default')
 
+GEMINI_API_KEY = os.getenv('GEMINI_API_KEY', None)
+
 TWOCAPTCHA_API_KEY = os.getenv('TWOCAPTCHA_API_KEY', 'default')
 
 LOGGING_CONFIG = {

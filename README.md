@@ -8,6 +8,7 @@
 |--------------------------------|--------|
 | **LinkedIn auto‑activity**     | Logs in with Playwright and makes **≥3 reposts per day** so your profile never looks idle. |
 | **Headless & container‑ready** | Runs entirely inside Docker; schedule it in Kubernetes, cron, or a tiny VPS. |
+| **AI-powered post analysis**   | Uses an **LLM agent via LangGraph** to analyze, filter, and summarize all scraped posts before reposting, ensuring only relevant and quality content is published. |
 | **Config by environment**      | Credentials and options come from `.env` – no hard‑coding secrets. |
 | **Poetry‑managed**             | Reproducible dependency graph, lock‑file, and handy `poetry run …` commands. |
 | **Python 3.13.3**              | Built and tested on the latest CPython release. |
@@ -23,10 +24,11 @@
 | Browser automation | **Playwright=1.51.0 (async API)**                                |
 | HTML parsing       | **beautifulsoup=44.13.3**                                        |
 | Async runtime      | **asyncio=3.4.3**                                                |
+| AI analysis        | **LangGraph + Gemini/ChatGPT agent integration**                 |
 | Quality tools      | `ruff=0.11.5`, `pytest=8.3.5`, `mypy=1.15.0`, `pre‑commit=4.2.0` |
 | Containerization   | **Docker / Docker Compose**                                      |
 
-Full dependency declaration sits in **`pyproject.toml`** (excerpt):
+Full dependency declaration sits in **`pyproject.toml`** (excerpt).
 
 ## 🚀 Quick Start
 
@@ -44,7 +46,8 @@ cp .env.example .env   # ← add your LinkedIn creds & settings here
 #### How it works
 
 * After logging in the bot **scrapes ~60 fresh posts**, runs them through a **keyword filter** (only texts that match your configured words are kept), and queues the results for reposting.
-* Reposts are dispatched at **random 30‑70 second intervals** to look human.
+* Runs them through an AI-powered LangGraph agent, which: Analyzes, filters, and summarizes each post for relevance and quality.
+* Any interactions are dispatched at **random 30‑70 second intervals** to look human.
 * **Adjustable volume** — simply put *15* instead of *3* on row **10** of docker‑compose.yml (`--posts_restrict 15`) to raise the limit to fifteen reposts per run.
 * Entire process is asynchronous – powered by **asyncio** and **Playwright's async API** for responsive and efficient processing.
 
