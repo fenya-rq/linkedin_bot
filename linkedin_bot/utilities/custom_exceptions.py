@@ -28,3 +28,7 @@ class CaptchaSolverError(Exception):
         for k, v in self.details.items():
             result += f'\n{k}: {v}'
         return result
+
+
+class JSONNotFound(Exception):
+    pass

@@ -1,6 +1,6 @@
 import pytest
-from playwright.async_api import Page
 from pytest_mock import MockerFixture
+from playwright.async_api import Page, Browser
 
 from linkedin_bot.services import SimpleClient, TwoCaptchaSolver
 
@@ -11,7 +11,7 @@ def fake_client():
 
 
 @pytest.fixture
-def manager_factory(mocker: MockerFixture, fake_client):
+def manager_factory(mocker: MockerFixture, fake_client, fake_browser):
     """
     Return a callable that instantiates an arbitrary Manager subclass
     and injects the shared `fake_client`.
@@ -33,10 +33,16 @@ def manager_factory(mocker: MockerFixture, fake_client):
             mock_config['side_effect'] = captcha_behavior
 
         mocker.patch.object(manager_cls, '_handle_captcha', **mock_config)
-        mgr = manager_cls(fake_client, *args, **kwargs)
+        mgr = manager_cls(fake_client, fake_browser, *args, **kwargs)
         return mgr
 
     return _build
+
+
+@pytest.fixture
+def fake_browser(mocker: MockerFixture):
+    """A fully‑mocked Playwright Browser object."""
+    return mocker.Mock(spec=Browser)
 
 
 @pytest.fixture
