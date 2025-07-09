@@ -34,25 +34,32 @@ testpaths = ["tests"]
 norecursedirs = [".git", ".tox", ".nox", ".venv", ".env", "build", "dist"]
 
 [tool.ruff]
-fix-only = true
 line-length = 100
 output-format = "grouped"
+exclude = [".venv", "files", "parser.log", "example*.py"]
 
 [tool.ruff.format]
 docstring-code-format = true
-docstring-code-line-length = 72
-exclude = [".venv", "files", "parser.log", "example*.py"]
 quote-style = "single"
 
 [tool.ruff.lint]
-ignore = [
-    "D100", "D101", "D102", "D103", "D104", "D105", "D107"
+select = [
+    "E", "F", "W", "C90",  # Flake 8 (pycodestyle, pyflakes, mccabe)
+    "N",  # pep8-naming
+    "I",  # isort
+    "S",  # Bandit (particulary)
 ]
-select = ["E4", "E7", "E9", "F", "D", "I", "PTH", "PD"]
-extend-select = ["TID252"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*.py" = ["S101"]
+"tests/**/*.py" = ["S101"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "pep257"
+
+[tool.ruff.lint.pycodestyle]
+max-line-length = 100
+
 
 [build-system]
 requires = ["poetry-core"]

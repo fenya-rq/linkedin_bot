@@ -4,6 +4,7 @@ from typing import Any, Callable
 
 from linkedin_bot.config import main_logger
 from linkedin_bot.utilities import CaptchaSolverError
+
 from .utils import log_writer
 
 

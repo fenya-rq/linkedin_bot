@@ -22,4 +22,4 @@ class SimpleClient:
     )
 
     def __post_init__(self):
-        self.user_agent = random.choice(self.USER_AGENTS)
+        self.user_agent = random.choice(self.USER_AGENTS)  # noqa: S311
