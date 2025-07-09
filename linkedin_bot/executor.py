@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Automate LinkedIn repost activity using Playwright."""
 
+import aiofiles
 import asyncio
-
 from playwright.async_api import Browser, async_playwright
 
 from linkedin_bot.ai import start_graph
-from linkedin_bot.bot import LinkedInPostsParser, LinkedInVacancyAnalyzeParser
+from linkedin_bot.bot import LinkedInVacancyAnalyzeParser
 from linkedin_bot.config import (
     DEBUG,
     LINKEDIN_LOGIN_URL,
     LINKEDIN_NAME,
     LINKEDIN_PASSWORD,
+    ROOT_DIR,
     main_logger,
 )
 from linkedin_bot.factories import ManagerFactory
@@ -31,9 +31,6 @@ async def start_activity(headless: bool, **kwargs) -> None:
     """
     client = SimpleClient(LINKEDIN_NAME, LINKEDIN_PASSWORD, LINKEDIN_LOGIN_URL)
 
-    # repost = ManagerFactory.create_repost_manager(client, LinkedInPostsParser)
-    # analyst = ManagerFactory.create_analyst_manager(client, LinkedInVacancyAnalyzeParser)
-
     reposts_amount = kwargs.get('restrict', 0)
     if reposts_amount < 1:
         raise Exception('Reposts amount should be at least 1 or greater!')
@@ -43,13 +40,22 @@ async def start_activity(headless: bool, **kwargs) -> None:
         browser: Browser = await pw.chromium.launch(headless=headless)
 
         analyst = ManagerFactory.create_analyst_manager(client, browser, LinkedInVacancyAnalyzeParser)
-        result = await analyst.add_post_links()
+        posts_data = await analyst.add_post_links()
 
-        with open('test.txt', mode='w', encoding='utf-8') as f:
-            for k, v in result.items():
-                f.write(f'{k} === {v}\n')
+    result = None
+    for content in posts_data.values():
+        log_writer(main_logger, 55, 'AI analysing started...')
+        result = await start_graph(user_input=f'{content}')
 
-    # start_graph
+    if result and (analyzed_posts := result[0].get('chatbot', {}).get('target_posts')):
+        log_writer(main_logger, 55, 'Posts analysed and writen.')
+
+        # Write AI summaries to file
+        # TODO: refactor - make as ai tool and call directly from node
+        #  NOTE: we can't use it with tool node or naive tool calling for current LLM
+        async with aiofiles.open(ROOT_DIR / 'files/vacancies.txt', mode='a', encoding='utf-8') as f:
+            for msg in analyzed_posts:
+                await f.write(f'{msg.content}\n')
 
 
 if __name__ == '__main__':

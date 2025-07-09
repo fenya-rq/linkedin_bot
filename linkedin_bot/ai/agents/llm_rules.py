@@ -33,7 +33,7 @@ State.target_posts for downstream processing.
 
 5. Focus on contacts:
 Especially keep in focus any contact information found such as Telegram handles, emails, LinkedIn
-profile links, or other relevant identifiers.
+profile links (not the post link), or other relevant identifiers.
 
 6. Analysis and Answer Format:
 Analyze the provided post item and return your answer strictly in the following JSON format:

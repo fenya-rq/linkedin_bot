@@ -239,6 +239,7 @@ class LNPostAnalystManager(LNLoginManager):
         parser_obj = self.parser_cls(html=content)  # type: ignore
         return parser_obj.parse()
 
+    # TODO: refactor - make available pass the `self._scroll_page` args
     async def get_post_data(self, page: Page) -> set[str] | dict[str, dict[str, str]]:
         """
         Extract unique post IDs from feed page.
@@ -246,10 +247,12 @@ class LNPostAnalystManager(LNLoginManager):
         :returns: Set of extracted post IDs
         """
         await page.wait_for_load_state('load')
-        await self._scroll_page(page, 5)
+        await self._scroll_page(page)
         content = await page.content()
         return self._parse_data(content)
 
+    # TODO: refactor - decompose the public method to encapsulate links adding
+    #  ALSO: think about create one common method: `add_post_links` and `_make_reposts` are similar
     async def add_post_links(self) -> dict[str, dict[str, str]]:
         page = await self.log_in()
 

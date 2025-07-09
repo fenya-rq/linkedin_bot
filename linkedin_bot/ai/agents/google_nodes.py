@@ -6,7 +6,7 @@ from langchain_core.messages import AIMessage, HumanMessage
 from linkedin_bot.ai.states import PostsStoragingState
 from linkedin_bot.config import GEMINI_API_KEY, main_logger
 from linkedin_bot.utilities.custom_exceptions import JSONNotFound
-from linkedin_bot.utilities.utils import dict_to_string, clean_json, log_writer
+from linkedin_bot.utilities.utils import clean_json, log_writer
 from .llm_rules import prompt_rules
 
 gemini_agent = init_chat_model(
@@ -27,13 +27,14 @@ async def chatbot(state: PostsStoragingState):
     analysis = await gemini_agent.ainvoke([HumanMessage(content=prompt_with_rules)])
 
     try:
-        analysis_result = clean_json(analysis.content)
+        analysis_result = clean_json(analysis.content, load=True)
     except (JSONNotFound, Exception) as e:
         log_writer(main_logger, 40,f'Analysis parsing error: {e}')
         return {'target_posts': state['target_posts']}
 
     if analysis_result.get('allowed'):
-        str_content = dict_to_string(analysis_result.get('post'))
+        post_data = analysis_result.get('post', {})
+        str_content = '\n'.join(f'{k}: {v}' for k, v in post_data.items())
         state['target_posts'].append(AIMessage(content=str_content))
 
     return {'target_posts': state['target_posts']}
