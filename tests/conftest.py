@@ -1,6 +1,6 @@
 import pytest
+from playwright.async_api import Browser, Page
 from pytest_mock import MockerFixture
-from playwright.async_api import Page, Browser
 
 from linkedin_bot.services import SimpleClient, TwoCaptchaSolver
 
@@ -21,9 +21,7 @@ def manager_factory(mocker: MockerFixture, fake_client, fake_browser):
         mgr = manager_factory(LNLoginManager)
 
         # With custom captcha behavior
-        mgr = manager_factory(
-            LNLoginManager, captcha_behavior=CaptchaSolverError('Test error')
-        )
+        mgr = manager_factory(LNLoginManager, captcha_behavior=CaptchaSolverError('Test error'))
         ```
     """
 

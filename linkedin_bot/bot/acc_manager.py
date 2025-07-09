@@ -2,10 +2,10 @@
 
 import asyncio
 import random
-import pyperclip
 from abc import ABC, abstractmethod
 from urllib.parse import urlparse
 
+import pyperclip
 from playwright.async_api import Browser, BrowserContext, Page
 
 from linkedin_bot.services import BaseCaptchaSolver, SimpleClient
@@ -65,7 +65,10 @@ class LNLoginManager(BaseManager):
     __slots__ = 'captcha_solver'
 
     def __init__(
-        self, client: SimpleClient, browser: Browser, captcha_solver: BaseCaptchaSolver | None = None
+        self,
+        client: SimpleClient,
+        browser: Browser,
+        captcha_solver: BaseCaptchaSolver | None = None,
     ) -> None:
         """
         Initialize with client and optional CAPTCHA solver.
@@ -83,7 +86,7 @@ class LNLoginManager(BaseManager):
         :param kwargs: Additional context options
         :returns: Configured browser context
         """
-        user_agent = random.choice(self.client.USER_AGENTS)
+        user_agent = random.choice(self.client.USER_AGENTS)  # noqa: S311
         return await self.browser.new_context(java_script_enabled=True, user_agent=user_agent)
 
     @staticmethod
@@ -109,7 +112,7 @@ class LNLoginManager(BaseManager):
         iframe_selector = 'iframe[title*="recaptcha"]'
         try:
             await page.wait_for_selector(iframe_selector, timeout=5000)
-        except:
+        except:  # noqa: E722
             return
 
         iframe = page.frame_locator(iframe_selector)
@@ -221,10 +224,10 @@ class LNPostAnalystManager(LNLoginManager):
         scroll_count = total_posts // posts_per_scroll
 
         for _ in range(scroll_count):
-            scroll_amount = random.randint(min_scroll_height, max_scroll_height)
+            scroll_amount = random.randint(min_scroll_height, max_scroll_height)  # noqa: S311
             await page.evaluate(f'window.scrollBy(0, {scroll_amount});')
 
-            delay = random.uniform(1.2, 2.5)
+            delay = random.uniform(1.2, 2.5)  # noqa: S311
             await asyncio.sleep(delay)
 
     def _parse_data(self, content: str) -> set[str] | dict[str, dict[str, str]]:
@@ -271,7 +274,7 @@ class LNPostAnalystManager(LNLoginManager):
                 'div[role="button"]:has-text("Скопировать ссылку на публикацию")'
             )
 
-            await page.wait_for_timeout(random.uniform(35000.0, 70000.0))
+            await page.wait_for_timeout(random.uniform(35000.0, 70000.0))  # noqa: S311
             try:
                 await save_link.wait_for(state='visible', timeout=500)
                 await save_link.click()
@@ -280,13 +283,14 @@ class LNPostAnalystManager(LNLoginManager):
                 posts_data[post_id]['url'] = pyperclip.paste()
 
             except Exception as e:
-                log_writer(main_logger, 30, f'Instant repost option not found for post {post_id}: {e}')
+                log_writer(
+                    main_logger, 30, f'Instant repost option not found for post {post_id}: {e}'
+                )
                 continue
         return posts_data
 
 
 class LNRepostManager(LNPostAnalystManager):
-
     async def _make_reposts(self, page: Page, post_ids: set[str], restrict: int) -> None:
         """
         Perform reposts for given post IDs.
@@ -307,7 +311,7 @@ class LNRepostManager(LNPostAnalystManager):
                 'div.artdeco-dropdown__item:has-text("Вы можете мгновенно отправить")'
             )
 
-            await page.wait_for_timeout(random.uniform(35000.0, 70000.0))
+            await page.wait_for_timeout(random.uniform(35000.0, 70000.0))  # noqa: S311
             try:
                 await instant_repost.wait_for(state='visible', timeout=1500)
                 await instant_repost.click()

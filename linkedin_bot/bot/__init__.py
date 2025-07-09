@@ -9,5 +9,5 @@ __all__ = [
     'LNRepostManager',
     'LinkedInPostsParser',
     'LinkedInVacancyAnalyzeParser',
-    'main_logger'
+    'main_logger',
 ]
