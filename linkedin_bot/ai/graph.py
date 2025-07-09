@@ -18,5 +18,6 @@ graph: StateGraph = (
 
 
 async def start_graph(user_input: str, config: RunnableConfig = thread_config):
-    response = await graph.ainvoke(input={'messages': user_input}, config=config)
+
+    response = await graph.ainvoke(input={'messages': user_input}, config=config, stream_mode='updates')
     return response

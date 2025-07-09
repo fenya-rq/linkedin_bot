@@ -1,11 +1,13 @@
-from typing import Annotated, TypedDict
+import json
 
 from langchain.chat_models import init_chat_model
-from langchain_core.messages import AnyMessage
-from langgraph.graph import add_messages
+from langchain_core.messages import AIMessage, HumanMessage
 
-from .llm_rules import linkedin_instructions
-
+from linkedin_bot.ai.states import PostsStoragingState
+from linkedin_bot.config import GEMINI_API_KEY, main_logger
+from linkedin_bot.utilities.custom_exceptions import JSONNotFound
+from linkedin_bot.utilities.utils import dict_to_string, clean_json, log_writer
+from .llm_rules import prompt_rules
 
 gemini_agent = init_chat_model(
     'google_genai:gemma-3n-e4b-it',
@@ -13,18 +15,25 @@ gemini_agent = init_chat_model(
     google_api_key=GEMINI_API_KEY,
     top_k=40,
     top_p=0.9,
-    temperature=0.3,
-    model_kwargs={
-        'system_instruction': linkedin_instructions
-    }
+    temperature=0.2
 )
 
 
-class State(TypedDict):
-    messages: Annotated[list[AnyMessage], add_messages]
+async def chatbot(state: PostsStoragingState):
+    last_msg = state['messages'][-1]
 
+    prompt_with_rules = f'{prompt_rules}\n{last_msg.content}'
 
-async def chatbot(state: State):
-    print(state['messages'])
-    response = await gemini_agent.ainvoke(state['messages'])
-    return response
+    analysis = await gemini_agent.ainvoke([HumanMessage(content=prompt_with_rules)])
+
+    try:
+        analysis_result = clean_json(analysis.content)
+    except (JSONNotFound, Exception) as e:
+        log_writer(main_logger, 40,f'Analysis parsing error: {e}')
+        return {'target_posts': state['target_posts']}
+
+    if analysis_result.get('allowed'):
+        str_content = dict_to_string(analysis_result.get('post'))
+        state['target_posts'].append(AIMessage(content=str_content))
+
+    return {'target_posts': state['target_posts']}
