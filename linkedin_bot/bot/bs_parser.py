@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from typing import Any
 
 from bs4 import BeautifulSoup
@@ -76,11 +77,14 @@ class LinkedInVacancyAnalyzeParser(LinkedInPostsParser):
         'backend', 'питон', 'бэкенд', 'найдись', 'в поиске', 'в поисках'
     }
 
-    def parse(self) -> set[str]:
-        data_content = set()
+    def parse(self) -> dict[str, dict[str, str]]:
+        result = dict()
 
-        for _, text in self.extract_posts_text():
-            if any(key in text for key in self.KEY_WORDS):
-                data_content.add(text)
+        for post_container, text in self.extract_posts_text():
+            if (any(key in text for key in self.KEY_WORDS) and
+                    'python' in text or 'питон' in text):
+                data_id = post_container.attrs.get('data-id')
 
-        return data_content
+                result[data_id] = {'text': text}
+
+        return result

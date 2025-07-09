@@ -6,6 +6,7 @@ import asyncio
 
 from playwright.async_api import Browser, async_playwright
 
+from linkedin_bot.ai import start_graph
 from linkedin_bot.bot import LinkedInPostsParser, LinkedInVacancyAnalyzeParser
 from linkedin_bot.config import (
     DEBUG,
@@ -38,17 +39,17 @@ async def start_activity(headless: bool, **kwargs) -> None:
         raise Exception('Reposts amount should be at least 1 or greater!')
 
     async with async_playwright() as pw:
+        # TODO: refactor `acc_managers` to initialize the page here and share to managers
         browser: Browser = await pw.chromium.launch(headless=headless)
 
-        # repost = ManagerFactory.create_repost_manager(client, browser, LinkedInPostsParser)
         analyst = ManagerFactory.create_analyst_manager(client, browser, LinkedInVacancyAnalyzeParser)
-
-        # await repost.make_reposts(reposts_amount)
-        result = await analyst.get_post_data()
+        result = await analyst.add_post_links()
 
         with open('test.txt', mode='w', encoding='utf-8') as f:
-            for t in result:
-                f.write(t)
+            for k, v in result.items():
+                f.write(f'{k} === {v}\n')
+
+    # start_graph
 
 
 if __name__ == '__main__':

@@ -2,6 +2,7 @@
 
 import asyncio
 import random
+import pyperclip
 from abc import ABC, abstractmethod
 from urllib.parse import urlparse
 
@@ -226,7 +227,7 @@ class LNPostAnalystManager(LNLoginManager):
             delay = random.uniform(1.2, 2.5)
             await asyncio.sleep(delay)
 
-    def _parse_data(self, content: str) -> set[str]:
+    def _parse_data(self, content: str) -> set[str] | dict[str, dict[str, str]]:
         """
         Parse data from content.
 
@@ -238,18 +239,47 @@ class LNPostAnalystManager(LNLoginManager):
         parser_obj = self.parser_cls(html=content)  # type: ignore
         return parser_obj.parse()
 
-    async def get_post_data(self, page: Page | None = None) -> set[str]:
+    async def get_post_data(self, page: Page) -> set[str] | dict[str, dict[str, str]]:
         """
         Extract unique post IDs from feed page.
 
         :returns: Set of extracted post IDs
         """
-        if not page:
-            page = await self.log_in()
         await page.wait_for_load_state('load')
         await self._scroll_page(page, 5)
         content = await page.content()
         return self._parse_data(content)
+
+    async def add_post_links(self) -> dict[str, dict[str, str]]:
+        page = await self.log_in()
+
+        posts_data: dict[str, dict[str, str]] = await self.get_post_data(page)
+
+        for post_id in posts_data.keys():
+            container = page.locator(f'div[data-id="{post_id}"]')
+            menu_btn = container.locator('button[aria-label^="Открыть меню управления"]')
+
+            if await menu_btn.count() < 1:
+                continue
+
+            await menu_btn.click()
+
+            save_link = container.locator(
+                'div[role="button"]:has-text("Скопировать ссылку на публикацию")'
+            )
+
+            await page.wait_for_timeout(random.uniform(35000.0, 70000.0))
+            try:
+                await save_link.wait_for(state='visible', timeout=500)
+                await save_link.click()
+                await page.wait_for_timeout(150)
+
+                posts_data[post_id]['url'] = pyperclip.paste()
+
+            except Exception as e:
+                log_writer(main_logger, 30, f'Instant repost option not found for post {post_id}: {e}')
+                continue
+        return posts_data
 
 
 class LNRepostManager(LNPostAnalystManager):
