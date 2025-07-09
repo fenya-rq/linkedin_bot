@@ -30,5 +30,5 @@ class CaptchaSolverError(Exception):
         return result
 
 
-class JSONNotFound(Exception):
+class JSONNotFoundError(Exception):
     pass

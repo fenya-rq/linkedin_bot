@@ -1,7 +1,8 @@
 """Factory module for creating different types of managers."""
+
 from playwright.async_api import Browser
 
-from linkedin_bot.bot import LNRepostManager, LNPostAnalystManager
+from linkedin_bot.bot import LNPostAnalystManager, LNRepostManager
 from linkedin_bot.bot.bs_parser import BaseParser
 from linkedin_bot.services import BaseCaptchaSolver, SimpleClient
 

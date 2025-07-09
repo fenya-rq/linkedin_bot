@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import aiofiles
 import asyncio
+
+import aiofiles
 from playwright.async_api import Browser, async_playwright
 
 from linkedin_bot.ai import start_graph
@@ -39,7 +40,9 @@ async def start_activity(headless: bool, **kwargs) -> None:
         # TODO: refactor `acc_managers` to initialize the page here and share to managers
         browser: Browser = await pw.chromium.launch(headless=headless)
 
-        analyst = ManagerFactory.create_analyst_manager(client, browser, LinkedInVacancyAnalyzeParser)
+        analyst = ManagerFactory.create_analyst_manager(
+            client, browser, LinkedInVacancyAnalyzeParser
+        )
         posts_data = await analyst.add_post_links()
 
     result = None

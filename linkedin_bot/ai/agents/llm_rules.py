@@ -14,8 +14,8 @@ link, or unique identifier.
 Only add posts to State.target_posts if they are about **hiring for Python roles by companies,
  recruiters, or hiring managers**.
 Eligible posts must:
-- Mention Python as a required or primary skill in the context of job openings, hiring announcements,
- or role descriptions for backend, software, or data engineering positions.
+- Mention Python as a required or primary skill in the context of job openings, hiring
+ announcements, or role descriptions for backend, software, or data engineering positions.
 - Clearly indicate that the post is **offering a role or opportunity**, not just seeking a job.
 
 Ignore:
@@ -47,7 +47,7 @@ Analyze the provided post item and return your answer strictly in the following 
   }
 }
 
-Put in "text" field the summary just about offered opportunities (role, stack) only. 
+Put in "text" field the summary just about offered opportunities (role, stack) only.
 
 If the post is not allowed, return:
 

@@ -2,7 +2,6 @@ from typing import Annotated, TypedDict
 
 from langchain_core.messages import AIMessage, AnyMessage
 from langgraph.graph import add_messages
-from pydantic import BaseModel, Field
 
 
 class BaseState(TypedDict):
