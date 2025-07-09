@@ -23,8 +23,3 @@ def clean_json(string: str, load: bool = False):
         return json.loads(json_data.group(1))
 
     return json_data.group(1)
-
-
-def dict_to_string(data: dict):
-    post_to_add = data.get('post')
-    return '\n'.join(f'{k}: {v}' for k, v in post_to_add.items())
