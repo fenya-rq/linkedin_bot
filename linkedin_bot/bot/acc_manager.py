@@ -250,7 +250,7 @@ class LNPostAnalystManager(LNLoginManager):
         :returns: Set of extracted post IDs
         """
         await page.wait_for_load_state('load')
-        await self._scroll_page(page)
+        await self._scroll_page(page, 500)
         content = await page.content()
         return self._parse_data(content)
 
@@ -278,14 +278,10 @@ class LNPostAnalystManager(LNLoginManager):
             try:
                 await save_link.wait_for(state='visible', timeout=500)
                 await save_link.click()
-                await page.wait_for_timeout(150)
-
                 posts_data[post_id]['url'] = pyperclip.paste()
 
             except Exception as e:
-                log_writer(
-                    main_logger, 30, f'Instant repost option not found for post {post_id}: {e}'
-                )
+                log_writer(main_logger, 30, f'Can\'t click "Copy link" button: {e}')
                 continue
         return posts_data
 

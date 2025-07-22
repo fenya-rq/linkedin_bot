@@ -179,3 +179,5 @@ example*.py
 # Cursor IDLE
 .cursorrules
 .rules
+
+linkedin_bot/files/
